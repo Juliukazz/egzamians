@@ -15,7 +15,7 @@ $PaginationHTML .= "<li ";
 if ($page_no <= 1) {
     $PaginationHTML .= "class='disabled'>{$page_no}";
 }
-if ($page_no >=  1) {
+if ($page_no > 1) {
     $PaginationHTML .= "<a href='?page_no={$ProductObj['previous_page']}'>&#8249&#8249 Atgal</a>";
 }
 $PaginationHTML .= "</li>";
