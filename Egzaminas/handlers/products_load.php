@@ -1,115 +1,54 @@
 <?php
 
-require_once './database.php';
+// $total_records_per_page;
+// $offset; 
+// $previous_page; 
+// $next_page; $adjacents; 
+// $result_count; 
+// $total_records;
+// $total_no_of_pages;
+// $second_last;
+// $statement;
+// $paginationResult;
 
-function LoadProductsPaged($category) {
-    if (isset($_GET['page_no']) && $_GET['page_no'] != "") {
-        $page_no = $_GET['page_no'];
-    } else {
-        $page_no = 1;
-    }
+class LoadProducts {
+    public $total_records_per_page, $offset, $previous_page, $next_page, $adjacents, $result_count, $total_records, $total_no_of_pages, $second_last, $statement, $paginationResult, $page_no;
+    function Load($category) {
+        $db = new Database();
+        $db->Open();
 
-    $total_records_per_page = 10;
-    $offset = ($page_no - 1) * $total_records_per_page;
-    $previous_page = $page_no - 1;
-    $next_page = $page_no + 1;
-    $adjacents = "2";
+        if (isset($_GET['page_no']) && $_GET['page_no'] != "") {
+            $this->page_no = $_GET['page_no'];
+        } else {
+            $this->page_no = 1;
+        } 
+        $this->total_records_per_page = 10;
+        $this->offset = ($this->page_no - 1) * $this->total_records_per_page;
+        $this->previous_page = $this->page_no - 1;
+        $this->next_page = $this->page_no + 1;
+        $this->adjacents = "2";
 
-    $result_count = $connection->prepare("SELECT COUNT(*) AS total_records FROM `products` WHERE `category` = '$category'");
-    $result_count->execute();
-    $total_records = $result_count->fetchAll();
-    foreach ($total_records as $record_count) {
-        $total_records = $record_count['total_records'];
-    }
-    $total_no_of_pages = ceil($total_records / $total_records_per_page);
-    $second_last = $total_no_of_pages - 1; // total pages minus 1
-    // END OF PAGINATION
-
-    $statement = $connection->prepare("SELECT * FROM products LIMIT $offset, $total_records_per_page WHERE `category` = '$category'");
-    $statement->execute();
-    $result = $statement->fetchAll();
-
-    // foreach ($result as $row) {?>
-    <!--     <div class="product">
-    //         <img class="productImg" src="<?php echo $row["imageSrc"]; ?>" alt="Not Loaded">
-    //         <div class="product-name"><?php echo $row["product_name"]; ?></div>
-    //         <div class="product-quantity"><span style="color: red;">Sandelyje:</span> <?php echo $row["quantity"]; ?></div>
-    //     </div> -->
-    <?php //} ?>
-    
-    
-<?php
-}
-function Pagination() {
-    ?><ul class="pagination">
-        <li <?php if ($page_no <= 1) {
-                echo "class='disabled'";
-            } ?>>
-            <a <?php if ($page_no > 1) {
-                    echo "href='?page_no=$previous_page'";
-                } ?>>&#8249&#8249 Previous</a>
-        </li>
-    <?php
-        if ($total_no_of_pages <= 10) {
-            for ($counter = 1; $counter <= $total_no_of_pages; $counter++) {
-                if ($counter == $page_no) {
-                    echo "<li class='active'><a>$counter</a></li>";
-                } else {
-                    echo "<li><a href='?page_no=$counter'>$counter</a></li>";
-                }
-            }
-        } elseif ($total_no_of_pages > 10) {
-            if ($page_no <= 4) {
-                for ($counter = 1; $counter < 8; $counter++) {
-                    if ($counter == $page_no) {
-                        echo "<li class='active'><a>$counter</a></li>";
-                    } else {
-                        echo "<li><a href='?page_no=$counter'>$counter</a></li>";
-                    }
-                }
-                echo "<li><a>...</a></li>";
-                echo "<li><a href='?page_no=$second_last'>$second_last</a></li>";
-                echo "<li><a href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";
-            } elseif ($page_no > 4 && $page_no < $total_no_of_pages - 4) {
-                echo "<li><a href='?page_no=1'>1</a></li>";
-                echo "<li><a href='?page_no=2'>2</a></li>";
-                echo "<li><a>...</a></li>";
-                for ($counter = $page_no - $adjacents; $counter <= $page_no + $adjacents; $counter++) {
-                    if ($counter == $page_no) {
-                        echo "<li class='active'><a>$counter</a></li>";
-                    } else {
-                        echo "<li><a href='?page_no=$counter'>$counter</a></li>";
-                    }
-                }
-                echo "<li><a>...</a></li>";
-                echo "<li><a href='?page_no=$second_last'>$second_last</a></li>";
-                echo "<li><a href='?page_no=$total_no_of_pages'>$total_no_of_pages</a></li>";
-            } else {
-                echo "<li><a href='?page_no=1'>1</a></li>";
-                echo "<li><a href='?page_no=2'>2</a></li>";
-                echo "<li><a>...</a></li>";
-                for ($counter = $total_no_of_pages - 6; $counter <= $total_no_of_pages; $counter++) {
-                    if ($counter == $page_no) {
-                        echo "<li class='active'><a>$counter</a></li>";
-                    } else {
-                        echo "<li><a href='?page_no=$counter'>$counter</a></li>";
-                    }
-                }
-            }
+        if ($category == '') {
+            $this->result_count = $db->connection->prepare("SELECT COUNT(*) AS total_records FROM `products`");
+        } else {
+            $this->result_count = $db->connection->prepare("SELECT COUNT(*) AS total_records FROM `products` WHERE `category` = '$category'");
         }
-        ?>
+        $this->result_count->execute();
+        $this->total_records = $this->result_count->fetchAll();
+        foreach ($this->total_records as $record_count) { 
+            $this->total_records = $record_count['total_records'];
+        }
+        $this->total_no_of_pages = ceil($this->total_records / $this->total_records_per_page);
+        $this->second_last = $this->total_no_of_pages - 1; // total pages minus 1
 
-        <li <?php if ($page_no >= $total_no_of_pages) {
-                echo "class='disabled'";
-            } ?>>
-            <a <?php if ($page_no < $total_no_of_pages) {
-                    echo "href='?page_no=$next_page'";
-            } ?>>Next</a>
-        </li>
+        if ($category == '') {
+            $this->statement = $db->connection->prepare("SELECT * FROM products LIMIT $this->offset, $this->total_records_per_page");
+        } else {
+            $this->statement = $db->connection->prepare("SELECT * FROM products WHERE `category` = '$category' LIMIT $this->offset, $this->total_records_per_page");
+        }
+        $this->statement->execute();
+        $this->paginationResult = $this->statement->fetchAll();
 
-        <?php if ($page_no < $total_no_of_pages) {
-            echo "<li><a href='?page_no=$total_no_of_pages'>Last &rsaquo;&rsaquo;</a></li>";
-        } ?>
-    </ul>
-    <?php
+        $db->Close();
+    }
 }
